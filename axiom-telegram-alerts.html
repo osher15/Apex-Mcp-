@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIOM — התראות לטלפון</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;800;900&display=swap');
+
+  :root {
+    --bg: #060810; --bg2: #0b0f1a; --bg3: #111827; --bg4: #1a2234;
+    --border: #1e2a3a; --accent: #00c6ff; --accent2: #7c3aed;
+    --tg: #229ed9; --green: #10b981; --warn: #f59e0b; --danger: #ef4444;
+    --text: #e2e8f0; --muted: #64748b;
+    --mono: 'IBM Plex Mono', monospace; --sans: 'Heebo', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 50px; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,198,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,198,255,0.025) 1px, transparent 1px);
+    background-size: 44px 44px; pointer-events: none; z-index: 0;
+  }
+
+  .header {
+    background: rgba(6,8,16,0.96); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border); padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100;
+  }
+  .logo-mark {
+    width: 40px; height: 40px; background: linear-gradient(135deg, var(--tg), var(--accent));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .logo-text { font-size: 18px; font-weight: 900; letter-spacing: 2px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+
+  .intro {
+    background: linear-gradient(135deg, rgba(34,158,217,0.12), rgba(0,198,255,0.05));
+    border: 1px solid rgba(34,158,217,0.25); border-radius: 12px;
+    padding: 18px; margin-bottom: 24px; font-size: 14px; line-height: 1.7;
+  }
+  .intro b { color: var(--accent); }
+
+  /* STEPS */
+  .step {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .step-header {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    background: rgba(255,255,255,0.015); border-bottom: 1px solid var(--border);
+  }
+  .step-num {
+    width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 15px; color: #fff; flex-shrink: 0;
+  }
+  .step-title { font-size: 15px; font-weight: 700; }
+  .step-body { padding: 18px; font-size: 14px; line-height: 1.8; }
+  .step-body ol { margin: 8px 20px; }
+  .step-body li { margin-bottom: 8px; }
+  .step-body code {
+    background: var(--bg4); padding: 2px 7px; border-radius: 4px;
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+  }
+  .highlight { color: var(--accent); font-weight: 600; }
+
+  .code-block {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; margin: 12px 0; font-family: var(--mono); font-size: 12px;
+    color: var(--green); position: relative; word-break: break-all; line-height: 1.6;
+    direction: ltr; text-align: left;
+  }
+  .copy-btn {
+    position: absolute; top: 10px; left: 10px; background: var(--accent);
+    border: none; border-radius: 5px; color: #fff; padding: 4px 10px;
+    font-size: 11px; font-family: var(--mono); cursor: pointer; font-weight: 600;
+  }
+
+  .tg-link {
+    display: inline-flex; align-items: center; gap: 8px; background: var(--tg);
+    color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; font-size: 14px; margin: 8px 0;
+  }
+
+  /* GENERATOR */
+  .generator {
+    background: var(--bg2); border: 1px solid var(--accent); border-radius: 12px;
+    margin: 24px 0; overflow: hidden;
+  }
+  .gen-header {
+    padding: 16px 18px; background: linear-gradient(135deg, rgba(0,198,255,0.12), rgba(124,58,237,0.06));
+    border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .gen-body { padding: 18px; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text); font-family: var(--mono); font-size: 13px;
+    outline: none; direction: ltr; text-align: left; transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .gen-out-btn {
+    width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 8px; color: #fff; font-family: var(--sans);
+    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px;
+  }
+
+  .output-section { margin-top: 18px; display: none; }
+  .output-section.show { display: block; }
+  .out-label { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; margin: 14px 0 6px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--green); color: #fff; padding: 12px 24px; border-radius: 8px;
+    font-weight: 600; font-size: 14px; z-index: 1000; transition: transform 0.3s;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .warn-box {
+    background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 8px; padding: 12px 14px; margin: 14px 0; font-size: 13px;
+    color: var(--warn); line-height: 1.6;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-mark">📲</div>
+  <div>
+    <div class="logo-text">התראות לטלפון</div>
+    <div class="logo-sub">TRADINGVIEW → TELEGRAM</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="intro">
+    קבל התראה לטלפון ברגע שהאינדיקטורים שלך מסתדרים — <b>בחינם, בלי שרת, בלי קוד</b>.
+    TradingView שולח ישירות ל-Telegram. אתה מקבל הודעה, בודק, ומבצע ידנית ב-Tradovate.
+    <br><br>
+    ⏱️ ההקמה לוקחת ~10 דקות, פעם אחת.
+  </div>
+
+  <div class="warn-box">
+    ⚠️ <b>דרישה אחת:</b> webhook ב-TradingView עובד רק עם תוכנית <b>Pro ומעלה</b>. בחינמית זה לא יפעל.
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">צור בוט טלגרם</div>
+    </div>
+    <div class="step-body">
+      <ol>
+        <li>פתח טלגרם, חפש <code>@BotFather</code> (עם הוי הכחול)</li>
+        <li>שלח <code>/newbot</code></li>
+        <li>תן שם לבוט (למשל <span class="highlight">AXIOM Alerts</span>)</li>
+        <li>תן username שמסתיים ב-<code>bot</code> (למשל <code>axiom_mnq_bot</code>)</li>
+        <li>BotFather יחזיר לך <span class="highlight">Bot Token</span> — מחרוזת ארוכה. <b>שמור אותה.</b></li>
+      </ol>
+      <a href="https://t.me/BotFather" target="_blank" class="tg-link">📲 פתח את BotFather</a>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">קבל את ה-Chat ID שלך</div>
+    </div>
+    <div class="step-body">
+      <ol>
+        <li>שלח הודעה כלשהי לבוט החדש שיצרת (לחץ Start קודם)</li>
+        <li>חפש בטלגרם <code>@userinfobot</code> ושלח לו <code>/start</code></li>
+        <li>הוא יחזיר לך את ה-<span class="highlight">Chat ID</span> שלך (מספר, למשל <code>123456789</code>)</li>
+        <li>שמור גם אותו.</li>
+      </ol>
+      <a href="https://t.me/userinfobot" target="_blank" class="tg-link">📲 פתח את userinfobot</a>
+    </div>
+  </div>
+
+  <!-- STEP 3 - GENERATOR -->
+  <div class="generator">
+    <div class="gen-header">⚙️ מחולל ה-Webhook שלך</div>
+    <div class="gen-body">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+        הכנס את ה-Token וה-Chat ID, ואני אצור לך את כתובת ה-webhook ואת הודעת ההתראה המוכנה.
+      </div>
+
+      <div class="field">
+        <label>BOT TOKEN (מ-BotFather)</label>
+        <input id="botToken" placeholder="123456789:ABCdef..." oninput="buildWebhook()">
+      </div>
+      <div class="field">
+        <label>CHAT ID (מ-userinfobot)</label>
+        <input id="chatId" placeholder="123456789" oninput="buildWebhook()">
+      </div>
+
+      <div class="output-section" id="outputSection">
+        <div class="out-label">📍 כתובת WEBHOOK — הדבק ב-TradingView (שדה Webhook URL)</div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyEl('webhookUrl')">העתק</button>
+          <span id="webhookUrl"></span>
+        </div>
+
+        <div class="out-label">💬 הודעת LONG — הדבק בשדה Message של התראת קנייה</div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyEl('msgLong')">העתק</button>
+          <span id="msgLong"></span>
+        </div>
+
+        <div class="out-label">💬 הודעת SHORT — הדבק בשדה Message של התראת מכירה</div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyEl('msgShort')">העתק</button>
+          <span id="msgShort"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">חבר ל-TradingView</div>
+    </div>
+    <div class="step-body">
+      <ol>
+        <li>פתח את הגרף של MNQ ב-TradingView</li>
+        <li>לחץ על כפתור ה-<span class="highlight">Alert</span> (⏰) למעלה</li>
+        <li>ב-<b>Condition</b> בחר את האינדיקטור שלך (Champion Trend / WealthSignal) או תנאי מחיר</li>
+        <li>גלול ל-<b>Notifications</b> → סמן <span class="highlight">Webhook URL</span></li>
+        <li>הדבק את כתובת ה-Webhook שיצרת למעלה</li>
+        <li>בלשונית <b>Message</b> — הדבק את הודעת LONG או SHORT המתאימה</li>
+        <li>לחץ <span class="highlight">Create</span>. זהו!</li>
+      </ol>
+      <div class="warn-box">
+        💡 צור התראה נפרדת לכל כיוון: אחת לכניסת LONG (עם הודעת LONG) ואחת ל-SHORT.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div class="step-title">בדוק שזה עובד</div>
+    </div>
+    <div class="step-body">
+      <ol>
+        <li>ב-TradingView, צור התראת בדיקה זמנית (תנאי שקורה מיד, כמו "price crosses" קרוב למחיר הנוכחי)</li>
+        <li>תוך שניות אמורה להגיע הודעה לטלגרם שלך</li>
+        <li>אם הגיעה — הכל מחובר. מחק את התראת הבדיקה.</li>
+        <li>אם לא — בדוק: Token נכון? Chat ID נכון? לחצת Start על הבוט?</li>
+      </ol>
+      <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--green);">
+        ✅ מעכשיו, בכל פעם שהאינדיקטור שלך נותן אות — תקבל התראה מיידית לטלפון. בלי לשבת מול המסך.
+      </div>
+    </div>
+  </div>
+
+  <div class="warn-box" style="margin-top:24px;">
+    🔒 <b>חשוב:</b> ההתראה רק <b>מודיעה</b> לך. היא לא מבצעת עסקה. אתה פותח Tradovate, בודק את האות, ומבצע ידנית — בדיוק כמו ש-Apex דורש.
+  </div>
+
+</div>
+
+<div class="toast" id="toast">הועתק ✓</div>
+
+<script>
+function buildWebhook() {
+  const token = document.getElementById('botToken').value.trim();
+  const chatId = document.getElementById('chatId').value.trim();
+  const out = document.getElementById('outputSection');
+
+  if (!token || !chatId) { out.classList.remove('show'); return; }
+
+  // Webhook URL — TradingView posts to this Telegram endpoint
+  const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text={{strategy.order.alert_message}}`;
+  document.getElementById('webhookUrl').textContent = url;
+
+  // Alert messages with the indicator stack context
+  const msgLong = `🟢 LONG MNQ — אות כניסה
+מחיר: {{close}}
+זמן: {{time}}
+═══════════
+בדוק: Champion Trend ירוק? מעל VWAP? WealthSignal פעיל?
+👤 בצע ידנית ב-Tradovate | סטופ חובה | R:R מינ' 1:4`;
+
+  const msgShort = `🔴 SHORT MNQ — אות כניסה
+מחיר: {{close}}
+זמן: {{time}}
+═══════════
+בדוק: Champion Trend אדום? מתחת VWAP? WealthSignal פעיל?
+👤 בצע ידנית ב-Tradovate | סטופ חובה | R:R מינ' 1:4`;
+
+  document.getElementById('msgLong').textContent = msgLong;
+  document.getElementById('msgShort').textContent = msgShort;
+
+  out.classList.add('show');
+}
+
+function copyEl(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+</script>
+</body>
+</html>

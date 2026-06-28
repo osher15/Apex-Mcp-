@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIOM — מרכז השליטה</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Heebo:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #05070e;
+    --bg2: #0a0e18;
+    --bg3: #0f1420;
+    --bg4: #161d2e;
+    --border: #1c2738;
+    --accent: #00c6ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --tg: #229ed9;
+    --text: #e6edf5;
+    --muted: #5f6b7d;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Heebo', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 60px;
+  }
+
+  /* Ambient glow */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, rgba(0,198,255,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,198,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,198,255,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* === HERO === */
+  .hero {
+    text-align: center;
+    padding: 56px 20px 40px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 30px; font-size: 12px; font-family: var(--mono);
+    color: var(--muted); margin-bottom: 24px; letter-spacing: 1px;
+  }
+  .live-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .hero h1 {
+    font-size: clamp(40px, 8vw, 76px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 0.95;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #fff 20%, var(--accent) 60%, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 17px; color: var(--muted); max-width: 480px;
+    margin: 0 auto; line-height: 1.6; font-weight: 400;
+  }
+
+  .hero-clock {
+    margin-top: 28px;
+    display: inline-flex; align-items: center; gap: 16px;
+    padding: 12px 22px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .clock-time { font-family: var(--mono); font-size: 18px; color: var(--accent); font-weight: 600; letter-spacing: 1px; }
+  .clock-div { width: 1px; height: 20px; background: var(--border); }
+  .clock-market { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+
+  /* === FLOW SECTION === */
+  .flow-intro {
+    text-align: center; margin: 40px 0 30px;
+  }
+  .flow-intro h2 {
+    font-size: 13px; font-family: var(--mono); letter-spacing: 3px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .flow-intro p { font-size: 15px; color: var(--text); }
+
+  /* The flow — vertical pipeline on mobile, connected cards */
+  .flow {
+    display: flex; flex-direction: column; gap: 0; position: relative;
+  }
+
+  .flow-step {
+    display: flex; gap: 20px; position: relative; padding-bottom: 8px;
+  }
+
+  /* connecting line */
+  .flow-rail {
+    display: flex; flex-direction: column; align-items: center; flex-shrink: 0;
+    width: 48px;
+  }
+  .rail-node {
+    width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; position: relative; z-index: 2;
+    border: 1px solid var(--border);
+  }
+  .rail-line {
+    width: 2px; flex: 1; min-height: 28px;
+    background: linear-gradient(var(--border), var(--border));
+    margin: 4px 0;
+  }
+  .flow-step:last-child .rail-line { display: none; }
+
+  .n-signal { background: linear-gradient(135deg, rgba(0,198,255,0.2), rgba(0,198,255,0.05)); border-color: rgba(0,198,255,0.4); }
+  .n-alert { background: linear-gradient(135deg, rgba(34,158,217,0.2), rgba(34,158,217,0.05)); border-color: rgba(34,158,217,0.4); }
+  .n-test { background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(124,58,237,0.05)); border-color: rgba(124,58,237,0.4); }
+  .n-exec { background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05)); border-color: rgba(16,185,129,0.4); }
+  .n-mcp { background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05)); border-color: rgba(245,158,11,0.4); }
+
+  /* card */
+  .flow-card {
+    flex: 1; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 8px;
+    transition: all 0.25s; cursor: pointer; text-decoration: none; color: inherit;
+    display: block;
+  }
+  .flow-card:hover { border-color: var(--accent); transform: translateY(-2px); background: var(--bg3); }
+  .flow-card.no-link { cursor: default; }
+  .flow-card.no-link:hover { transform: none; border-color: var(--border); background: var(--bg2); }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .card-title { font-size: 18px; font-weight: 800; }
+  .card-step-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 1px; }
+
+  .card-tag {
+    font-size: 10px; font-family: var(--mono); font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .tag-ready { background: rgba(16,185,129,0.15); color: var(--green); }
+  .tag-setup { background: rgba(245,158,11,0.15); color: var(--warn); }
+  .tag-opt { background: rgba(95,107,125,0.15); color: var(--muted); }
+
+  .card-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+
+  .card-action {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; color: var(--accent); font-family: var(--mono);
+  }
+  .card-action.tg { color: var(--tg); }
+  .card-action.purple { color: #a78bfa; }
+  .card-action.green { color: var(--green); }
+  .card-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  /* === COMPLIANCE STRIP === */
+  .compliance {
+    margin: 36px 0;
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.03));
+    border: 1px solid rgba(245,158,11,0.25); border-radius: 14px;
+    padding: 20px 24px; display: flex; gap: 16px; align-items: flex-start;
+  }
+  .compliance-icon { font-size: 28px; flex-shrink: 0; }
+  .compliance h3 { font-size: 15px; color: var(--warn); margin-bottom: 6px; }
+  .compliance p { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+  /* === COST STRIP === */
+  .cost-strip {
+    margin: 24px 0; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 24px;
+  }
+  .cost-header { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .cost-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .cost-item {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; text-align: center;
+  }
+  .cost-name { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .cost-price { font-family: var(--mono); font-size: 18px; font-weight: 700; }
+  .price-free { color: var(--green); }
+  .price-paid { color: var(--accent); }
+  .cost-note { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--mono); }
+
+  .cost-tip {
+    margin-top: 16px; padding: 12px 14px; background: rgba(0,198,255,0.06);
+    border: 1px solid rgba(0,198,255,0.2); border-radius: 9px;
+    font-size: 13px; color: var(--text); line-height: 1.6;
+  }
+  .cost-tip b { color: var(--accent); }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center; margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-stack { font-size: 12px; color: var(--muted); font-family: var(--mono); line-height: 1.8; }
+  .footer-stack span { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 40px 16px 30px; }
+    .flow-rail { width: 40px; }
+    .rail-node { width: 40px; height: 40px; font-size: 18px; border-radius: 11px; }
+    .flow-step { gap: 14px; }
+    .flow-card { padding: 16px; }
+    .hero-clock { flex-direction: column; gap: 8px; }
+    .clock-div { display: none; }
+    .compliance { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge"><span class="live-dot"></span> מערכת מסחר MNQ · תואם Apex</div>
+    <h1>AXIOM</h1>
+    <p class="hero-sub">מערכת אותות מלאה למסחר ב-MNQ. מניתוח שוק ועד ביצוע — אתה שולט בכל החלטה.</p>
+
+    <div class="hero-clock">
+      <span class="clock-time" id="clock">--:--:--</span>
+      <div class="clock-div"></div>
+      <span class="clock-market" id="market">--</span>
+    </div>
+  </div>
+
+  <!-- FLOW -->
+  <div class="flow-intro">
+    <h2>הנתיב המלא</h2>
+    <p>חמישה כלים, תהליך אחד — מלמעלה למטה</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- STEP 1: SIGNAL -->
+    <div class="flow-step">
+      <div class="flow-rail">
+        <div class="rail-node n-signal">⚡</div>
+        <div class="rail-line"></div>
+      </div>
+      <a href="axiom-signal-command.html" class="flow-card">
+        <div class="card-top">
+          <div>
+            <div class="card-step-label">שלב 1 · ניתוח</div>
+            <div class="card-title">מרכז אותות</div>
+          </div>
+          <span class="card-tag tag-ready">מוכן ✓</span>
+        </div>
+        <div class="card-desc">תאר מצב שוק או הדבק נתונים מ-TradingView. NOSTRO מנתח עם 5 האינדיקטורים שלך ונותן אות ברור: כניסה, סטופ, יעד — עם בדיקת תאימות Apex.</div>
+        <span class="card-action">פתח מרכז אותות ←</span>
+      </a>
+    </div>
+
+    <!-- STEP 2: ALERTS -->
+    <div class="flow-step">
+      <div class="flow-rail">
+        <div class="rail-node n-alert">📲</div>
+        <div class="rail-line"></div>
+      </div>
+      <a href="axiom-telegram-alerts.html" class="flow-card">
+        <div class="card-top">
+          <div>
+            <div class="card-step-label">שלב 2 · התראות</div>
+            <div class="card-title">התראות לטלפון</div>
+          </div>
+          <span class="card-tag tag-setup">הקמה חד-פעמית</span>
+        </div>
+        <div class="card-desc">TradingView שולח לך לטלגרם ברגע שהאינדיקטורים מסתדרים. בלי לשבת מול המסך. מחולל webhook מוכן + מדריך 5 שלבים.</div>
+        <span class="card-action tg">הקם התראות ←</span>
+      </a>
+    </div>
+
+    <!-- STEP 3: BACKTEST -->
+    <div class="flow-step">
+      <div class="flow-rail">
+        <div class="rail-node n-test">📈</div>
+        <div class="rail-line"></div>
+      </div>
+      <div class="flow-card no-link">
+        <div class="card-top">
+          <div>
+            <div class="card-step-label">שלב 3 · אימות</div>
+            <div class="card-title">בקטסטינג QC/Lean</div>
+          </div>
+          <span class="card-tag tag-setup">QuantConnect</span>
+        </div>
+        <div class="card-desc">בדוק אם האסטרטגיה שלך רווחית על נתוני אמת לפני שאתה סומך עליה. הקוד (main.py) מוכן — מעלים ל-quantconnect.com ולוחצים Backtest.</div>
+        <span class="card-meta">📁 main.py · קוד מוכן להעלאה</span>
+      </div>
+    </div>
+
+    <!-- STEP 4: EXECUTE -->
+    <div class="flow-step">
+      <div class="flow-rail">
+        <div class="rail-node n-exec">👤</div>
+        <div class="rail-line"></div>
+      </div>
+      <div class="flow-card no-link">
+        <div class="card-top">
+          <div>
+            <div class="card-step-label">שלב 4 · ביצוע</div>
+            <div class="card-title">ביצוע ידני ב-Tradovate</div>
+          </div>
+          <span class="card-tag tag-ready">אתה שולט</span>
+        </div>
+        <div class="card-desc">קיבלת אות, בדקת שהוא הגיוני — עכשיו אתה פותח Tradovate ומבצע ידנית. זה הקו האדום של Apex: האדם מחליט ומבצע כל עסקה.</div>
+        <span class="card-meta">🔒 הצד הבטוח של Apex</span>
+      </div>
+    </div>
+
+    <!-- STEP 5: MCP -->
+    <div class="flow-step">
+      <div class="flow-rail">
+        <div class="rail-node n-mcp">🔗</div>
+      </div>
+      <div class="flow-card no-link">
+        <div class="card-top">
+          <div>
+            <div class="card-step-label">תוספת · אופציונלי</div>
+            <div class="card-title">MCP Server</div>
+          </div>
+          <span class="card-tag tag-opt">למחשב</span>
+        </div>
+        <div class="card-desc">מחבר את Claude ישירות לנתוני MNQ חיים, ליומן העסקאות ולחישובי Apex. שואל את Claude "מה המצב שלי?" ומקבל תשובה עם נתונים אמיתיים.</div>
+        <span class="card-meta">📁 mcp_server.py · דורש Claude Desktop</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COMPLIANCE -->
+  <div class="compliance">
+    <div class="compliance-icon">🛡️</div>
+    <div>
+      <h3>למה הכל ידני — וזה לטובתך</h3>
+      <p>Apex אוסר ביצוע אוטומטי. המערכת הזו עושה את כל העבודה הקשה — ניתוח, חישוב, התראה — ומשאירה לך רק את ההחלטה והלחיצה. ככה אתה מקבל את כל היתרון של אלגוריתם, בלי לסכן את החשבון. ניהול trailing stop על פוזיציה קיימת מותר, וגם זה בנוי פנימה.</p>
+    </div>
+  </div>
+
+  <!-- COST -->
+  <div class="cost-strip">
+    <div class="cost-header">💰 כמה זה עולה</div>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-name">מרכז אותות</div>
+        <div class="cost-price price-free">חינם</div>
+        <div class="cost-note">HTML</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-name">בוט טלגרם</div>
+        <div class="cost-price price-free">חינם</div>
+        <div class="cost-note">BotFather</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-name">QuantConnect</div>
+        <div class="cost-price price-free">חינם</div>
+        <div class="cost-note">tier בסיסי</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-name">TradingView</div>
+        <div class="cost-price price-paid">$14.95</div>
+        <div class="cost-note">Essential/חודש</div>
+      </div>
+    </div>
+    <div class="cost-tip">
+      💡 <b>הדבר היחיד בתשלום:</b> TradingView Essential (בשביל webhook). <b>הטריק:</b> התחל עם נסיון חינם 30 יום, ואז חכה למבצע Black Friday (40-80% הנחה) לפני שאתה קונה שנתי. ככה משלמים מחיר Essential ומקבלים Premium.
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-stack">
+      INDICATOR STACK: <span>Champion Trend</span> · <span>VWAP</span> · <span>Supply & Demand</span> · <span>WealthSignal</span> · <span>Range Breaker</span><br>
+      APEX 50K EVALUATION · MNQ MICRO E-MINI NASDAQ · 17:00–22:00 IL
+    </div>
+  </div>
+
+</div>
+
+<script>
+function updateClock() {
+  const now = new Date();
+  const il = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+  const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+
+  document.getElementById('clock').textContent =
+    il.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const etTime = et.getHours() * 60 + et.getMinutes();
+  const m = document.getElementById('market');
+  if (etTime >= 570 && etTime < 960) { m.textContent = '● שוק פתוח'; m.style.color = '#10b981'; }
+  else if (etTime >= 240 && etTime < 570) { m.textContent = '● פרה-מארקט'; m.style.color = '#f59e0b'; }
+  else if (etTime >= 960 && etTime < 1200) { m.textContent = '● אחרי שוק'; m.style.color = '#f59e0b'; }
+  else { m.textContent = '○ שוק סגור'; m.style.color = '#ef4444'; }
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+</body>
+</html>
