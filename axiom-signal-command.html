@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -508,6 +507,8 @@
 // ═══════════════════════════════════════════════
 
 // המפתח מאובטח בשרת ה-Worker — לא נמצא בקוד
+// הגישה ל-Worker מוגנת בסיסמה (WORKER_PASSWORD מוגדר ב-Cloudflare)
+const WORKER_PASSWORD = 'Oshers2015';
 
 const MNQ_POINT = 2.0;   // $2.00 per point
 let currentSignal = { entry: null, stop: null, target: null };
@@ -637,6 +638,7 @@ async function generateSignal() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        password: WORKER_PASSWORD,
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: ANALYST_SYSTEM,
